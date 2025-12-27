@@ -24,6 +24,9 @@
     <ClCompile Include="lib\stb.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
+    <ClCompile Include="src\Shader.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="assests\fragment_core.glsl" />
@@ -31,5 +34,10 @@
     <None Include="assets\fragment_core.glsl" />
     <None Include="assets\vertex_core.glsl" />
     <None Include="assets\fragment_core2.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Shader.h">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

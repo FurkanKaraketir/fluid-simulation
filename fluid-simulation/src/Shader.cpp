@@ -26,7 +26,7 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath) {
 
 		std::cout << "No Error at shaderProgram" << std::endl;
 	}
-	
+
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
@@ -65,7 +65,7 @@ GLuint Shader::compileShader(const char* filePath, GLenum type) {
 	GLuint  ret = glCreateShader(type);
 	std::string shaderSrc = loadShaderSrc(filePath);
 	const GLchar* shader = shaderSrc.c_str();
-	glShaderSource(ret, 1, &shader,NULL);
+	glShaderSource(ret, 1, &shader, NULL);
 	glCompileShader(ret);
 
 

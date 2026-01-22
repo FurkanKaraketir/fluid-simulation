@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <stb/stb_image.h>
 
 #include <fstream>
 #include <sstream>
@@ -60,16 +61,16 @@ int main() {
 
 
 	float vertices[] = {
-		//positions                     //colors
-		-0.5f, -0.5f, 0.0f,             1.0f, 1.0f, 0.5f,
-		-0.5f, 0.5f, 0.0f,              0.5f, 1.0f, 0.75f,
-		0.5f, 0.5f,0.0f,                1.0f, 0.5f, 0.5f,
-		0.5f, -0.5f, 0.0f,              0.75f, 0.75f, 1.0f
+		//positions                     //colors					//texture coordinates
+		-0.5f, -0.5f, 0.0f,             1.0f, 1.0f, 0.5f,			0.0f, 0.0f,
+		-0.5f, 0.5f, 0.0f,              0.5f, 1.0f, 0.75f,			0.0f, 1.0f,
+		0.5f, -0.5f, 0.0f,              0.75f, 0.75f, 1.0f,			1.0f, 0.0f,
+		0.5f, 0.5f,0.0f,                1.0f, 0.5f, 0.5f,			1.0f, 1.0f
 	};
 
 	unsigned int indices[] = {
 		0,1,2,
-		2,3,0
+		3,1,2
 	};
 
 	unsigned int VAO, VBO, EBO;
@@ -84,21 +85,58 @@ int main() {
 
 
 	//positions
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 
 	//colors
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	//texture coordinates
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
+	// TEXTURES
+
+
+	unsigned int texture1;
+
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+
+	int widht, height, nChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load("assets/me.jpg", &widht, &height, &nChannels, 0);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, widht, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed Texture" << std::endl;
+	}
+
+	stbi_image_free(data);
+
+	shader.activate();
+	shader.setInt("texture1", 0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 
-	glm::mat4 trans = glm::mat4(1.0f);
+	/*glm::mat4 trans = glm::mat4(1.0f);
 	trans = glm::rotate(trans, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	shader.activate();
@@ -108,7 +146,7 @@ int main() {
 	trans2 = glm::scale(trans2, glm::vec3(1.5f));
 	trans2 = glm::rotate(trans2, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	shader2.activate();
-	shader2.setMat4("transform", trans2);
+	shader2.setMat4("transform", trans2);*/
 
 
 	while (!glfwWindowShouldClose(window)) {
@@ -119,7 +157,10 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 
-		trans = glm::rotate(trans, glm::radians((float)glfwGetTime() / 100.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+
+		/*trans = glm::rotate(trans, glm::radians((float)glfwGetTime() / 100.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		shader.activate();
 		shader.setMat4("transform", trans);
@@ -127,17 +168,15 @@ int main() {
 		trans2 = glm::rotate(trans2, glm::radians((float)glfwGetTime() / -100.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		shader2.activate();
-		shader2.setMat4("transform", trans2);
+		shader2.setMat4("transform", trans2);*/
 
 
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_LINE_STRIP, 0, 6);
 		shader.activate();
 
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		shader2.activate();
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)(3 * sizeof(GLuint)));
 
 		//glUseProgram(shaderPrograms[1]);
 		//glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)(3 * sizeof(unsigned int)));
